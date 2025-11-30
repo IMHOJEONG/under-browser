@@ -2,19 +2,40 @@ import tkinter
 import sys
 from shared.url import URL
 from shared.config import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
+# from shared.font import bi_times
+from shared.Text import Text
+from shared.Tag import Tag
+from shared.Layout import Layout
 
-def layout(text):
 
-    display_list = []
-    cursor_x, cursor_y = HSTEP, VSTEP
-    for c in text:
-        display_list.append((cursor_x, cursor_y, c))
-        cursor_x += HSTEP
-        if cursor_x >= WIDTH - HSTEP:
-            cursor_y += VSTEP
-            cursor_x = HSTEP
+import tkinter.font 
 
-    return display_list
+# window = tkinter.Tk()
+# bi_times = tkinter.font.Font(
+#     family="Times",
+#     size=25,
+#     weight="bold",
+#     slant="italic"
+# )
+
+def lex(body):
+        out = []
+        buffer = ""
+        in_tag = False
+        for c in body:
+            if c == "<":
+                in_tag = True
+                if buffer: out.append(Text(buffer))
+                buffer = ""
+            elif c == ">":
+                in_tag = False
+                out.append(Tag(buffer))
+                buffer = ""
+            else: 
+                buffer += c
+        if not in_tag and buffer: 
+            out.append(Text(buffer))
+        return out
 
 class Browser:
     def __init__(self):
@@ -24,47 +45,41 @@ class Browser:
 
         self.scroll = 0
         # 아래 화살표 키 바인딩 
-        self.window.bind("<Down>", self.scrolldown)
+        # self.window.bind("<Down>", self.scrolldown)
+        self.display_list = []
     
-    def scrolldown(self, e):
-        self.scroll += SCROLL_STEP
-        self.draw()
-
-    def lex(self, body):
-        text = ""
-        in_tag = False
-        for c in body:
-            if c == "<":
-                in_tag = True
-            elif c == ">":
-                in_tag = False
-            elif not in_tag: 
-                text += c
-        return text
+    # def scrolldown(self, e):
+    #     self.scroll += SCROLL_STEP
+    #     self.draw()
 
     def load(self, url):
         body = url.request()
-        text = self.lex(body)
-
+        tokens = lex(body)
         print("Load URL:", url)
         # self.canvas.create_rectangle(10, 20, 400, 300)
         # self.canvas.create_oval(100, 100, 150, 150)
         # self.canvas.create_text(200, 150, text="Hi!")
-        
-        
-        self.display_list = layout(text)
+        self.display_list = Layout(tokens).display_list
         self.draw()
     
     # 루프를 돌리며, 각 문자를 그리는 함수
+    
+    # font1 = tkinter.font.Font(family="Times", size=16)
+    # font2 = tkinter.font.Font(family="Times", size=16, slant="italic")
+    # x, y = 200, 225
+    # self.canvas.create_text(x, y, text="Hello, ", font=font1, anchor="nw")
+    # 아래 줄이 필요
+    # x += font1.measure("Hello, ")
+    # self.canvas.create_text(x, y, text="overlapping! ", font=font2, anchor="nw")
     def draw(self):
         self.canvas.delete("all")
-        for x,y,c in self.display_list:
 
-            # if y > self.scroll + HEIGHT: continue
-            # if y + VSTEP < self.scroll: continue
+        for x,y,word,font in self.display_list:
 
-            self.canvas.create_text(x, y - self.scroll, text=c)
+            if y > self.scroll + HEIGHT: continue
+            if y + font.metrics("linespace") < self.scroll: continue
 
+            self.canvas.create_text(x, y - self.scroll, text=word, font=font, anchor="nw")
 
 
 if __name__ == "__main__":
