@@ -1,7 +1,7 @@
 import tkinter
 import tkinter.font 
 from shared.config import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
-from shared.Text import Text
+from shared.Element import Text
 
 
 FONTS = {}

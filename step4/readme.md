@@ -1,0 +1,41 @@
+## 문서 트리 구축하기 
+
+- HTML은 사실 tree
+
+- 목표: HTML 파서 & 레이아웃 엔진
+
+태그와 텍스트가 중첩된 HTML 문서 
+
+- 노드로 변경 = 자식 노드들의 리스트, 부모 노드에 대한 포인터를 추가해야 함 
+
+```py 
+class Element:
+    def __init__(self, tag, parent):
+        self.tag = tag
+        self.children = [] 
+        self.parent = parent
+```
+
+- 텍스트 노드는 자식 노드가 필요 없지만, 일관성을 위해 추가 
+
+- 파싱(parsing): 소스 코드로부터 노드 트리를 구성하는 것 
+
+    - parser: 한 번에 하나의 엘리먼트나 텍스트 노드를 추가하면서 트리를 구축함 
+
+    - parser가 파싱을 진행하는 동안 불완전한 트리를 저장해야 한다 
+
+- Parser: HTML 파일을 처음부터 끝까지(차례로) 읽기 때문 = 미완성 태그는 트리 어딘가에 늘 존재할 수 있음 
+
+    - 미완성 태그 = 항상 열려 있지만, 아직 닫히지 않음 
+
+    - 완성된 노드보다 소스에서 항상 뒤에 나오고, 항상 다른 미완성 태그의 자식 노드  
+
+```py
+# 파서가 파싱을 시작하기 전에 태그를 읽기 전
+# unfinished 리스트는 비어 있는 상태로 시작 
+# 분석 중인 소스 코드 및 불완전 트리 저장 목적
+class HTMLParser:
+    def __init__(self, body):
+        self.body = body
+        self.unfinished = [] 
+```

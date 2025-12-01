@@ -3,8 +3,8 @@ import sys
 from shared.url import URL
 from shared.config import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
 # from shared.font import bi_times
-from shared.Text import Text
-from shared.Tag import Tag
+from shared.Element import Text
+from shared.Element import Tag
 from shared.Layout import Layout
 
 
@@ -18,24 +18,6 @@ import tkinter.font
 #     slant="italic"
 # )
 
-def lex(body):
-        out = []
-        buffer = ""
-        in_tag = False
-        for c in body:
-            if c == "<":
-                in_tag = True
-                if buffer: out.append(Text(buffer))
-                buffer = ""
-            elif c == ">":
-                in_tag = False
-                out.append(Tag(buffer))
-                buffer = ""
-            else: 
-                buffer += c
-        if not in_tag and buffer: 
-            out.append(Text(buffer))
-        return out
 
 class Browser:
     def __init__(self):
