@@ -1,10 +1,24 @@
+from shared.Text import Text
+from shared.Element import Element
 
 
+
+def print_tree(node, indent=0):
+        print(" " * indent, node)
+        for child in node.children:
+            print_tree(child, indent + 2)
 class HTMLParser:
+
+    SELF_CLOSING_TAGS = [
+        "area", "base", "br", "col", "embed", "hr", 
+        "img", "input", "link", "meta", "param", "source",
+        "track", "wbr"
+    ]
+
     def __init__(self, body):
         self.body = body
         self.unfinished = []
-    def parser(self):
+    def parse(self):
         text = ""
         in_tag = False 
         for c in self.body:
@@ -24,11 +38,38 @@ class HTMLParser:
         return self.finish()
     
     def add_text(self, text):
-        parent = self.unfinished[-1]
+        # 개행은 어떻게? 
+        if text.isspace(): return
+
+        parent = self.unfinished[-1] if self.unfinished else None
         node = Text(text, parent)
         parent.children.append(node)
 
+    def get_attributes(self, text):
+        parts = text.split()
+        tag = parts[0].casefold()
+        attributes = {}
+        for attrpair in parts[1:]:
+            if "=" in attrpair:
+                key, value = attrpair.split("=", 1)
+                attributes[key.casefold()] = value
+            
+                if len(value) > 2 and value[0] in ["'", "\""]:
+                    value = value[1:-1]
+                else: 
+                    attributes[attrpair.casefold()] = ""
+        return tag, attributes
+
+
+
     def add_tag(self, tag):
+
+        tag, attributes = self.get_attributes(tag)
+
+        if tag.startswith("!"): 
+            return
+ 
+
         if tag.startswith("/"):
             if len(self.unfinished) == 1:
                 return
@@ -36,10 +77,16 @@ class HTMLParser:
             parent = self.unfinished[-1]
             parent.children.append(node)
 
+        # 셀프 클로징 태그 
+        elif tag in self.SELF_CLOSING_TAGS:
+            parent = self.unfinished[-1]
+            node = Element(tag, attributes, parent)
+            parent.children.append(node)
+
         # 여는 태그
         else:
             parent = self.unfinished[-1] if self.unfinished else None
-            node = Element(tag, parent)
+            node = Element(tag, attributes, parent)
             self.unfinished.append(node)
         
     def finish(self):
@@ -48,3 +95,6 @@ class HTMLParser:
             parent = self.unfinished[-1]
             parent.children.append(node)
         return self.unfinished.pop()
+
+   
+
