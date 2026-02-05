@@ -1,0 +1,23 @@
+# lefthook.yml
+pre-commit:
+  # 병렬 실행 허용 (optional)
+  parallel: true
+
+  # 기본적으로 staged된 파일들만 전달받아 처리합니다.
+  jobs:
+    - name: format-check
+      # glob / exclude 등으로 파일 필터링도 가능
+      files: git diff --name-only --cached
+      run: python3 ./scripts/lefthook/pre_commit.py format {staged_files}
+      # 실패 시 메시지 출력용
+      allow_failure: false
+
+    - name: lint
+      files: git diff --name-only --cached
+      run: python3 ./scripts/lefthook/pre_commit.py lint {staged_files}
+      allow_failure: false
+
+    - name: tests
+      files: git diff --name-only --cached
+      run: python3 ./scripts/lefthook/pre_commit.py test {staged_files}
+      allow_failure: false
