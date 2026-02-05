@@ -38,3 +38,8 @@ python3 -m step4.print_tree https://browser.engineering/html.html
      <link>
      <meta>
 ```
+
+
+## 4.6 암시적 태그 검증
+
+python -m step2.tk-browser  https://browser.engineering/
