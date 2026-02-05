@@ -1,7 +1,7 @@
 import tkinter
 import tkinter.font 
 from shared.config import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
-from shared.Element import Text
+from shared.Text import Text
 
 
 FONTS = {}
@@ -15,7 +15,7 @@ def get_font(size, weight, style):
         FONTS[key] = (font, label)
     return FONTS[key][0]
 
-class Layout: 
+class Layout:
     def __init__(self, tokens):
         self.tokens = tokens
         self.display_list = []
@@ -26,8 +26,9 @@ class Layout:
         self.style = "roman"
         self.size = 12
         self.line = []
-        for tok in tokens:
-            self.token(tok)
+        self.recurse(tokens)
+        # for tok in tokens:
+           
         self.flush()
 
     def token(self, tok):
@@ -36,28 +37,7 @@ class Layout:
             for word in tok.text.split(): 
                 self.word(word)
       
-        elif tok.tag == "i":
-            self.style = "italic"
-        elif tok.tag == "/i":
-            self.style = "roman"
-        elif tok.tag == "b":
-            self.weight = "bold"
-        elif tok.tag == "/b":
-            self.weight = "normal"
-        elif tok.tag == "small":
-            self.size -= 2
-        elif tok.tag == "/small":
-            self.size += 2
-        elif tok.tag == "big":
-            self.size += 4
-        elif tok.tag == "/big":
-            self.size -= 4
-        elif tok.tag == "br":
-            self.flush()
-        elif tok.tag == "/p":
-            self.flush()
-            self.cursor_y += VSTEP
-
+     
     def word(self, word):
         font = get_font(self.size, self.weight, self.style)
         w = font.measure(word)
@@ -83,3 +63,42 @@ class Layout:
         self.cursor_y = baseline + 1.25 * max_descent
         self.cursor_x = HSTEP
         self.line = []
+
+    def open_tag(self, tag):
+        if tag == "i":
+            self.style = "italic"
+        elif tag == "b":
+            self.weight = "bold"
+        elif tag == "small":
+            self.size -= 2
+        elif tag == "big":
+            self.size += 4
+        elif tag == "br":
+            self.flush()
+        
+
+    def close_tag(self, tag):
+        if tag == "i":
+            self.style = "roman"
+        elif tag == "/b":
+            self.weight = "normal"
+        elif tag == "/small":
+            self.size += 2
+        elif tag == "/big":
+            self.size -= 4
+        elif tag == "/p":
+            self.flush()
+            self.cursor_y += VSTEP
+    
+    def recurse(self, tree):
+        if isinstance(tree, Text):
+            for word in tree.text.split():
+                self.word(word)
+
+        else:
+            self.open_tag(tree.tag)
+            for child in tree.children:
+                self.recurse(child)
+            self.close_tag(tree.tag)
+
+

@@ -1,10 +1,10 @@
 import tkinter
 import sys
+from shared.HTMLParser import HTMLParser
 from shared.url import URL
 from shared.config import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
 # from shared.font import bi_times
-from shared.Element import Text
-from shared.Element import Tag
+from shared.Text import Text
 from shared.Layout import Layout
 
 
@@ -36,12 +36,15 @@ class Browser:
 
     def load(self, url):
         body = url.request()
-        tokens = lex(body)
+        self.nodes = HTMLParser(body).parse()
+        self.display_list= Layout(self.nodes).display_list
+
+        # tokens = lex(body)
         print("Load URL:", url)
         # self.canvas.create_rectangle(10, 20, 400, 300)
         # self.canvas.create_oval(100, 100, 150, 150)
         # self.canvas.create_text(200, 150, text="Hi!")
-        self.display_list = Layout(tokens).display_list
+        # self.display_list = Layout(tokens).display_list
         self.draw()
     
     # 루프를 돌리며, 각 문자를 그리는 함수
